@@ -1,5 +1,6 @@
 import subprocess
 import threading
+from vramhelper import vram
 
 # This main script runs each of the bots and restarts them on fatal crashes. Fatal crashes are unexpected worst case scenarios, but must be handled somehow. To define paths of bots to start, make a file called "bots.txt" that has the name of the bot and the path of the bot, seperated with "|". At the path, the bot should have a venv and a main.py file.
 
@@ -11,15 +12,16 @@ with open("bots.txt", "r") as bot_file:
 print(bots)
 
 def bot_thread(name, path):
-    print("Starting", name)
     path = path[:-1] if path[-1] == "/" else path
     while True:
-        process = subprocess.run(path + "/venv/bin/python3 " + path + "/main.py", stdout=subprocess.PIPE, shell=True, cwd=path)
-        with process.stdout:
-            with open("./logs/" + name, "a") as log_file:
-                log_file.write(process.stdout)
+        process = subprocess.Popen("./venv/bin/python3 ./main.py", stdout=subprocess.PIPE, shell=True, cwd=path, universal_newlines=True)
+        for line in iter(process.stdout.readline, b''):
+            if line.strip() != "":
+                with open("./logs/" + name + ".log", "a") as log_file:
+                    log_file.write(line)
         exitcode = process.wait()
         print(name, "exited!")
+        vram.deallocate(name)
         if exitcode != 0:
             with open("./logs/" + name, "a") as log_file:
                 log_file.write("Warning! Process exited with code " + str(exitcode))
@@ -29,7 +31,7 @@ def bot_thread(name, path):
 
 bot_threads = []
 for bot in bots:
-    bot_threads.append(threading.Thread(target=bot_thread, args=[bot[0], bot[1]]))
+    bot_threads.append(threading.Thread(target=bot_thread, args=[bot[0], bot[1]], daemon=True))
 
 for thread in bot_threads:
     thread.start()
