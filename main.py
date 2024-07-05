@@ -31,7 +31,7 @@ def bot_thread(name, path):
 
 bot_threads = []
 for bot in bots:
-    bot_threads.append(threading.Thread(target=bot_thread, args=[bot[0], bot[1]], daemon=True))
+    bot_threads.append(threading.Thread(target=bot_thread, args=[bot[0], bot[1]]))
 
 for thread in bot_threads:
     thread.start()
