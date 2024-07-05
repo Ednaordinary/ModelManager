@@ -7,14 +7,19 @@ model_manager_path = "./allocation.txt" # This will be different depending on th
 def allocate(name):
     allocate = True
     with open(model_manager_path, "r") as allocation_file:
-        if not name.strip() in [x[:-1] for x in allocation_file.readlines()]:
+        lines = allocation_file.readlines()
+        print(lines)
+        if name.strip() in [x[:-1] for x in lines]:
             allocate = False
     if allocate:
         with open(model_manager_path, "a") as allocation_file:
-            allocation_file.write(name)
+            allocation_file.write(name+"\n")
+
 def deallocate(name):
+    with open(model_manager_path, "r") as allocation_file:
+        lines = allocation_file.readlines()
     with open(model_manager_path, "w") as allocation_file:
-        for i in allocation_file.readlines():
+        for i in lines:
             if i[:-1] != name:
                 allocation_file.write(i)
 
@@ -25,7 +30,11 @@ async def wait_for_allocation(name):
             lines = allocation_file.readlines()
             if len(lines) != 0:
                 if lines[0][:-1] == name:
-                    return
+                    break
                 else:
-                    yield lines[0][:-1]
+                    if lines[0][:-1] != last_allocation:
+                        yield lines[0][:-1]
+                        last_allocation = lines[0][:-1]
         time.sleep(0.02)
+        print("waiting")
+    return
