@@ -14,7 +14,7 @@ print(bots)
 def bot_thread(name, path):
     path = path[:-1] if path[-1] == "/" else path
     while True:
-        process = subprocess.Popen("./venv/bin/python3 ./main.py", stdout=subprocess.PIPE, shell=True, cwd=path, universal_newlines=True)
+        process = subprocess.Popen("./venv/bin/python3 ./main.py", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, cwd=path, universal_newlines=True)
         for line in iter(process.stdout.readline, b''):
             if line.strip() != "":
                 with open("./logs/" + name + ".log", "a") as log_file:
